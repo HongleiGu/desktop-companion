@@ -40,3 +40,13 @@ body {
 .blink {
   animation: blink 1s step-start infinite;
 }
+
+/* Ensure interactive elements actually show the pointer */
+.interactive {
+  pointer-events: auto !important;
+}
+
+/* Utility to ensure we can click things inside a draggable area */
+.no-drag {
+  -webkit-app-region: no-drag !important;
+}

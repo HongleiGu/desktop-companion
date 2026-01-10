@@ -13,6 +13,8 @@ interface UserProfile {
   relation: string;
 }
 
+type ModalType = "history" | "profile" | "settings" | null;
+
 interface Store {
   chatHistory: ChatRecord[];
   systemPrompt: string;
@@ -32,6 +34,9 @@ interface Store {
   setUserProfile: (profile: UserProfile) => void;
   incrementAffinity: (amount: number) => void;
   setCharacterState: (state: Store["characterState"]) => void;
+
+  openModal: ModalType;
+  setOpenModal: (m: ModalType) => void;
 }
 
 export const useStore = create<Store>((set) => ({
@@ -58,4 +63,7 @@ export const useStore = create<Store>((set) => ({
   setUserProfile: (profile) => set({ userProfile: profile }),
   incrementAffinity: (amount) => set((state) => ({ affinity: state.affinity + amount })),
   setCharacterState: (stateVal) => set({ characterState: stateVal }),
+
+  openModal: null,
+  setOpenModal: (m) => set({ openModal: m }),
 }));

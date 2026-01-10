@@ -1,23 +1,21 @@
 "use client";
-import { Dropdown, Modal } from "antd";
+
+import { Dropdown } from "antd";
 import type { MenuProps } from "antd";
-import { useRef, useState } from "react";
+import { useRef } from "react";
+import Modals from "./Modals";
+import { useStore } from "../store/store";
 
-import HistoryPanel from "./HistoryPanel"; // your existing history list
-import UserProfileForm from "./UserProfile";
-import PromptEditor from "./PromptEditor";
+type MenuType = "history" | "profile" | "settings" | "exit";
 
-export default function CharacterMenu({
-  children
-}: {
-  children: React.ReactNode;
-}) {
-  const [openModal, setOpenModal] = useState<
-    string | null
-  >(null);
-
+export default function CharacterMenu({ children }: { children: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // ✅ Use global store for modal state
+  const openModal = useStore((s) => s.openModal);
+  const setOpenModal = useStore((s) => s.setOpenModal);
+
+  // Menu items
   const items: MenuProps["items"] = [
     { key: "history", label: "历史记录" },
     { key: "profile", label: "用户档案" },
@@ -26,60 +24,48 @@ export default function CharacterMenu({
     { key: "exit", label: "退出" }
   ];
 
+  // Menu click handler
   const onClick: MenuProps["onClick"] = ({ key }) => {
-    if (key === "exit") {
-      window.close(); // replace with tauri API later
+    const typedKey = key as MenuType;
+    if (typedKey === "exit") {
+      window.close();
       return;
     }
-    setOpenModal(key);
+
+    // ✅ Open the selected modal
+    setOpenModal(typedKey);
+  };
+
+  // Electron drag logic
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button === 0) {
+      window.electronAPI.startDrag();
+
+      const handleMouseUp = () => {
+        window.electronAPI.stopDrag();
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+      window.addEventListener("mouseup", handleMouseUp);
+    }
   };
 
   return (
-    <div ref={containerRef} className="pointer-events-auto">
-      <Dropdown 
-        trigger={["contextMenu"]} // Changed from "click" to "contextMenu"
+    <div ref={containerRef} className="interactive">
+      <Dropdown
+        trigger={["contextMenu"]}
         menu={{ items, onClick }}
         getPopupContainer={() => containerRef.current!}
       >
-        {/* Wrap children in a div that ensures pointer events are active */}
-        <div className="pointer-events-auto">{children}</div>
+        <div 
+          onMouseDown={handleMouseDown}
+          className="cursor-grab active:cursor-grabbing"
+        >
+          {children}
+        </div>
       </Dropdown>
 
-      {/* 历史记录 */}
-      <Modal
-        open={openModal === "history"}
-        onCancel={() => setOpenModal(null)}
-        footer={null}
-        title="历史记录"
-        width={360}
-        mask={false}
-      >
-        <HistoryPanel />
-      </Modal>
-
-      {/* 用户档案 */}
-      <Modal
-        open={openModal === "profile"}
-        onCancel={() => setOpenModal(null)}
-        footer={null}
-        title="用户档案"
-        width={360}
-        mask={false}
-      >
-        <UserProfileForm />
-      </Modal>
-
-      {/* 设置 */}
-      <Modal
-        open={openModal === "settings"}
-        onCancel={() => setOpenModal(null)}
-        footer={null}
-        title="设置"
-        width={360}
-        mask={false}
-      >
-        <PromptEditor />
-      </Modal>
+      {/* ✅ Modals read from global state */}
+      <Modals />
     </div>
   );
 }

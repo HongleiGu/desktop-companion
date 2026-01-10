@@ -76,6 +76,7 @@ export default function ChatBox() {
         onChange={(e) => setMsg(e.target.value)}
         placeholder="说点什么…"
         onPressEnter={handleSend}
+        className="interactive"
       />
       <Button type="primary" onClick={handleSend}>
         发送
