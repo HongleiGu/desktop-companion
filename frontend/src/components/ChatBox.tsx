@@ -10,10 +10,12 @@ export default function ChatBox() {
   const addChat = useStore((s) => s.addChat);
   const setStreamText = useStore((s) => s.setStreamText);
   const clearStream = useStore((s) => s.clearStream);
+  const setCharacterState = useStore((s) => s.setCharacterState);
 
   const handleSend = async () => {
     if (!msg.trim()) return;
 
+    setCharacterState("thinking-eyes-open");
     // Clear previous typewriter stream
     clearStream();
 
@@ -56,6 +58,7 @@ export default function ChatBox() {
         timestamp: new Date().toISOString(),
         message: fullReply,
       });
+      setCharacterState("idle");
 
       // Clear the temporary stream text
       // clearStream();
@@ -66,6 +69,7 @@ export default function ChatBox() {
         timestamp: new Date().toISOString(),
         message: "（她好像没有回应…）",
       });
+      setCharacterState("idle");
     }
   };
 
