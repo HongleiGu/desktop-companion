@@ -1,23 +1,9 @@
 import { create } from "zustand";
-
-export interface ChatRecord {
-  id: string;
-  timestamp: string;
-  message: string;
-}
-
-export interface UserProfile {
-  nickname: string;
-  birthday: string;
-  ocName: string;
-  relation: string;
-}
-
-export type ModalType = "history" | "profile" | "settings" | null;
-export type CharacterState = "idle" | "blink" | "drag" | "smile" | "thinking-eyes-open" | "thinking-eyes-closed"
+import { UserProfile, CharacterState, ModalType } from "../types";
+import { Message } from "../types/chat";
 
 interface Store {
-  chatHistory: ChatRecord[];
+  chatHistory: Message[];
   systemPrompt: string;
   userProfile: UserProfile;
   affinity: number;
@@ -29,7 +15,7 @@ interface Store {
   clearStream: () => void;
 
   // --- chat actions ---
-  addChat: (chat: ChatRecord) => void;
+  addChat: (chat: Message) => void;
   deleteChat: (id: string) => void;
   setPrompt: (prompt: string) => void;
   setUserProfile: (profile: UserProfile) => void;

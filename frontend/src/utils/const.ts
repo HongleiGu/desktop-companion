@@ -1,4 +1,4 @@
-import { CharacterState } from "../store/store";
+import { CharacterState } from "../types"
 
 export const IMAGE_MAP: Record<CharacterState, string> = {
   "idle": "/character/idle.png",

@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { Button, Input, Space } from "antd";
 import { useStore } from "../store/store";
+import { useModelConfigStore } from "../store/modelStore";
 import { sendMessageStream } from "../lib/api";
+import { Message } from "../types/chat";
 
 export default function ChatBox() {
   const [msg, setMsg] = useState("");
@@ -11,6 +13,9 @@ export default function ChatBox() {
   const setStreamText = useStore((s) => s.setStreamText);
   const clearStream = useStore((s) => s.clearStream);
   const setCharacterState = useStore((s) => s.setCharacterState);
+  // const chatHistory = useStore((s) => s.chatHistory);
+  const systemPrompt = useStore((s) => s.systemPrompt);
+  const modelConfig = useModelConfigStore((s) => s.config);
 
   const handleSend = async () => {
     if (!msg.trim()) return;
@@ -23,13 +28,15 @@ export default function ChatBox() {
     addChat({
       id: Date.now().toString(),
       timestamp: new Date().toISOString(),
-      message: msg,
+      content: msg,
+      role: "user"
     });
 
     setMsg("");
 
     try {
-      const reader = await sendMessageStream(msg); // fetch reader
+      // the update of chatHistory requires a re-render, so we had to do this runtime workaround
+      const reader = await sendMessageStream(useStore.getState().chatHistory, systemPrompt, modelConfig); // fetch reader
       let fullReply = "";
       const decoder = new TextDecoder();
 
@@ -54,10 +61,11 @@ export default function ChatBox() {
 
       // Store final assistant message
       addChat({
-        id: (Date.now() + 1).toString(),
+        id: crypto.randomUUID(),
         timestamp: new Date().toISOString(),
-        message: fullReply,
-      });
+        content: fullReply,
+        role: "assistant"
+      } as Message);
       setCharacterState("idle");
 
       // Clear the temporary stream text
@@ -65,9 +73,10 @@ export default function ChatBox() {
     } catch (err) {
       console.error(err);
       addChat({
-        id: (Date.now() + 2).toString(),
+        id: crypto.randomUUID(),
         timestamp: new Date().toISOString(),
-        message: "（她好像没有回应…）",
+        content: "（ta好像没有回应…）",
+        role: "assistant"
       });
       setCharacterState("idle");
     }

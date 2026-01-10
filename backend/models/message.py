@@ -1,9 +1,9 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Literal
-from datetime import datetime
-
+from pydantic import BaseModel
+from typing import Literal, Optional
 
 class Message(BaseModel):
-    text: str = Field(..., description="User input text")
-    role: Literal["user", "assistant", "system"] = "user"
-    timestamp: datetime = Field(default_factory=datetime.now())
+    id: str # the frontend needs this to delete messages
+    role: Literal["system", "user", "assistant", "tool"]
+    content: str
+    name: Optional[str] = None # if tool is needed
+    timestamp: str

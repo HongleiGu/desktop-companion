@@ -45,16 +45,38 @@ export default function Home() {
         className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center p-6"
       >
         {streamedText && (
-          <div className="mb-2 px-3 py-2 bg-white rounded-lg shadow-md text-black relative">
-            {streamedText}
+          <div className="relative mb-2">
+            {/* Close button (outside scroll area) */}
             <button
               onClick={clearStream}
-              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs"
+              className="
+                absolute -top-2 -right-2 z-10
+                bg-red-500 text-white
+                rounded-full w-5 h-5 text-xs
+                flex items-center justify-center
+                shadow-md
+                hover:bg-red-600
+              "
             >
               ✕
             </button>
+
+            {/* Scrollable text bubble */}
+            <div
+              className="
+                px-3 py-2
+                bg-white/80 backdrop-blur-md
+                rounded-xl shadow-lg
+                text-black text-sm leading-relaxed
+                max-h-40 overflow-auto scrollbar-hide
+                whitespace-pre-wrap
+              "
+            >
+              {streamedText}
+            </div>
           </div>
         )}
+
 
         <CharacterMenu>
           <Character />
