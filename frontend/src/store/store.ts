@@ -1,11 +1,11 @@
 import { create } from "zustand";
-import { UserProfile, CharacterState, ModalType } from "../types";
+import { CharacterProfile, CharacterState, MenuType } from "../types";
 import { Message } from "../types/chat";
 
 interface Store {
   chatHistory: Message[];
   systemPrompt: string;
-  userProfile: UserProfile;
+  characterProfile: CharacterProfile;
   affinity: number;
   characterState: CharacterState;
 
@@ -18,18 +18,20 @@ interface Store {
   addChat: (chat: Message) => void;
   deleteChat: (id: string) => void;
   setPrompt: (prompt: string) => void;
-  setUserProfile: (profile: UserProfile) => void;
+  setCharacterProfile: (profile: CharacterProfile) => void;
   incrementAffinity: (amount: number) => void;
   setCharacterState: (state: CharacterState) => void;
 
-  openModal: ModalType;
-  setOpenModal: (m: ModalType) => void;
+  openModal: MenuType;
+  setOpenModal: (m: MenuType) => void;
+
+  setSystemPrompt: (prompt: string) => void;
 }
 
 export const useStore = create<Store>((set) => ({
   chatHistory: [],
   systemPrompt: "",
-  userProfile: { nickname: "", birthday: "", ocName: "", relation: "" },
+  characterProfile: { birthday: "", ocName: "", relation: "", description: "", speakingStyle: "", personality: "" },
   affinity: 0,
   characterState: "idle",
 
@@ -47,10 +49,12 @@ export const useStore = create<Store>((set) => ({
   deleteChat: (id) =>
     set((state) => ({ chatHistory: state.chatHistory.filter((c) => c.id !== id) })),
   setPrompt: (prompt) => set({ systemPrompt: prompt }),
-  setUserProfile: (profile) => set({ userProfile: profile }),
+  setCharacterProfile: (profile) => set({ characterProfile: profile }),
   incrementAffinity: (amount) => set((state) => ({ affinity: state.affinity + amount })),
   setCharacterState: (stateVal) => set({ characterState: stateVal }),
 
   openModal: null,
   setOpenModal: (m) => set({ openModal: m }),
+
+  setSystemPrompt: (prompt) => set({systemPrompt: prompt})
 }));

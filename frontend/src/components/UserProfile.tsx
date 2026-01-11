@@ -2,17 +2,20 @@
 import { useState } from "react";
 import { Input, Button, Space } from "antd";
 import { useStore } from "../store/store";
+// import { CharacterProfile } from "../types";
 
-export default function UserProfileForm() {
-  const userProfile = useStore((s) => s.userProfile);
-  const setUserProfile = useStore((s) => s.setUserProfile);
-  const [form, setForm] = useState(userProfile);
+export default function CharacterProfileForm() {
+  const characterProfile = useStore((s) => s.characterProfile);
+  const setCharacterProfile = useStore((s) => s.setCharacterProfile);
+  const [form, setForm] = useState(characterProfile);
 
   const fields = [
-    { key: "nickname", label: "昵称" },
+    { key: "ocName", label: "昵称" },
     { key: "birthday", label: "生日" },
-    { key: "ocName", label: "对OC的称呼" },
-    { key: "relation", label: "关系设定" }
+    { key: "relation", label: "关系设定" },
+    { key: "description", label: "基本信息及设定" },
+    { key: "speakingStyle", label: "说话风格"},
+    { key: "personality", label: "性格"}
   ] as const;
 
   return (
@@ -34,7 +37,7 @@ export default function UserProfileForm() {
       <Button
         type="primary"
         size="small"
-        onClick={() => setUserProfile(form)}
+        onClick={() => setCharacterProfile(form)}
       >
         保存档案
       </Button>

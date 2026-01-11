@@ -3,6 +3,7 @@
 import './globals.css';
 import { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
+import Modals from '../components/Modals';
 
 const queryClient = new QueryClient();
 
@@ -18,6 +19,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <QueryClientProvider client={queryClient}>
           {children}
         </QueryClientProvider>
+
+        {/* ✅ Modals read from global state */}
+        <Modals />
       </body>
     </html>
   );

@@ -3,23 +3,23 @@
 import { Dropdown } from "antd";
 import type { MenuProps } from "antd";
 import { useRef } from "react";
-import Modals from "./Modals";
+// import Modals from "./Modals";
 import { useStore } from "../store/store";
-
-type MenuType = "history" | "profile" | "settings" | "exit";
+import { MenuType } from "../types";
 
 export default function CharacterMenu({ children }: { children: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // ✅ Use global store for modal state
-  const openModal = useStore((s) => s.openModal);
+  // const openModal = useStore((s) => s.openModal);
   const setOpenModal = useStore((s) => s.setOpenModal);
 
   // Menu items
   const items: MenuProps["items"] = [
     { key: "history", label: "历史记录" },
     { key: "profile", label: "用户档案" },
-    { key: "settings", label: "设置" },
+    { key: "system prompt", label: "系统提示词模板" },
+    { key: "modelConfig", label: "模型设置"},
     { type: "divider" },
     { key: "exit", label: "退出" }
   ];
@@ -64,8 +64,6 @@ export default function CharacterMenu({ children }: { children: React.ReactNode 
         </div>
       </Dropdown>
 
-      {/* ✅ Modals read from global state */}
-      <Modals />
     </div>
   );
 }

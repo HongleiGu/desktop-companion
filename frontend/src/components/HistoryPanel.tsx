@@ -31,7 +31,7 @@ export default function HistoryPanel() {
             <Text type="secondary" style={{ fontSize: 11 }}>
               {dayjs(chat.timestamp).format("HH:mm:ss")}
             </Text>
-            <Text>{chat.message}</Text>
+            <Text>{chat.content}</Text>
           </Space>
         </List.Item>
       )}

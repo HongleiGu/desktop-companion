@@ -6,6 +6,7 @@ import { useStore } from "../store/store";
 import { useModelConfigStore } from "../store/modelStore";
 import { sendMessageStream } from "../lib/api";
 import { Message } from "../types/chat";
+import { formatSystemPrompt } from "../utils/chat";
 
 export default function ChatBox() {
   const [msg, setMsg] = useState("");
@@ -36,7 +37,7 @@ export default function ChatBox() {
 
     try {
       // the update of chatHistory requires a re-render, so we had to do this runtime workaround
-      const reader = await sendMessageStream(useStore.getState().chatHistory, systemPrompt, modelConfig); // fetch reader
+      const reader = await sendMessageStream(useStore.getState().chatHistory, formatSystemPrompt(systemPrompt), modelConfig); // fetch reader
       let fullReply = "";
       const decoder = new TextDecoder();
 
