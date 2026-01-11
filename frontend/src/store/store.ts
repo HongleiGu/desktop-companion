@@ -26,6 +26,9 @@ interface Store {
   setOpenModal: (m: MenuType) => void;
 
   setSystemPrompt: (prompt: string) => void;
+
+  files: File[];
+  setFiles: (files: File[]) => void;
 }
 
 export const useStore = create<Store>((set) => ({
@@ -56,5 +59,8 @@ export const useStore = create<Store>((set) => ({
   openModal: null,
   setOpenModal: (m) => set({ openModal: m }),
 
-  setSystemPrompt: (prompt) => set({systemPrompt: prompt})
+  setSystemPrompt: (prompt) => set({systemPrompt: prompt}),
+
+  files: [],
+  setFiles: (files: File[]) => set({files})
 }));

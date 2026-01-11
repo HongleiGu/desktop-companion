@@ -81,10 +81,6 @@ export default function Home() {
         <CharacterMenu>
           <Character />
         </CharacterMenu>
-
-        <div className="mt-2 w-64">
-          <ChatBox />
-        </div>
       </div>
     </main>
   );

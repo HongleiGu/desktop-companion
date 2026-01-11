@@ -3,10 +3,13 @@
 import { useEffect, useRef } from "react";
 import { IMAGE_MAP } from "../utils/const";
 import { useStore } from "../store/store";
+import ChatBox from "./ChatBox";
 
 export default function Character() {
   const setCharacterState = useStore((s) => s.setCharacterState);
   const characterState = useStore((s) => s.characterState);
+  const setFiles = useStore((s) => s.setFiles)
+
 
   // Track timers + previous state safely
   const timerRef = useRef<number | null>(null);
@@ -87,30 +90,67 @@ export default function Character() {
     }
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault(); // allow drop
+    setCharacterState("awaiting-file"); // optional visual feedback
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setCharacterState("idle"); // reset visual
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files); // get the files
+
+    if (files.length > 0) {
+      setFiles(files)
+    }
+
+    setCharacterState("idle"); // reset after drop
+  };
+
+
   return (
-    <div
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
+    <div 
       style={{
-        width: 150,
-        height: 150,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        userSelect: "none",
+        flexDirection: "column"
       }}
     >
-      <img
-        src={IMAGE_MAP[characterState]}
-        alt="Character"
-        draggable={false}
+      <div
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
         style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "contain",
-          pointerEvents: "none",
+          width: 150,
+          height: 150,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          userSelect: "none",
         }}
-      />
+      >
+        <img
+          src={IMAGE_MAP[characterState]}
+          alt="Character"
+          draggable={false}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+            pointerEvents: "none",
+          }}
+        />
+      </div>
+      <div className="mt-2 w-64">
+        <ChatBox />
+      </div>
     </div>
   );
 }

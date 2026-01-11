@@ -32,6 +32,7 @@ class OllamaLLM(LLM):
         return r.json()["message"]["content"]
 
     def stream(self, messages: List[Message]) -> Iterator[StreamChunk]:
+        print(type(messages[0]))
         payload = {
             "model": self.model,
             "messages": [m.model_dump() for m in messages],

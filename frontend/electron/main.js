@@ -15,6 +15,7 @@ function createWindow() {
     frame: false,
     transparent: true,
     alwaysOnTop: true,
+    alwaysOnTopLevel: 'screen-saver',
     resizable: false,
     hasShadow: false,
     webPreferences: {
@@ -23,9 +24,17 @@ function createWindow() {
       nodeIntegration: false,
     },
   });
+  mainWindow.setAlwaysOnTop(true, "screen-saver")
+  mainWindow.setVisibleOnAllWorkspaces(true)
 
   const url = isDev ? 'http://localhost:3000' : `file://${join(__dirname, '../../out/index.html')}`;
   mainWindow.loadURL(url);
+
+  setInterval(() => {
+    if (!mainWindow.isDestroyed()) {
+      mainWindow.setAlwaysOnTop(true, 'screen-saver');
+    }
+  }, 100);
 }
 
 // Robust Manual Dragging Logic

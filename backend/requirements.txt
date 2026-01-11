@@ -1,0 +1,5 @@
+chardet
+pypdf
+ollama
+grok
+python-docx

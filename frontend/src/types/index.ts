@@ -8,4 +8,13 @@ export interface CharacterProfile {
 }
 
 export type MenuType = "history" | "profile" | "system prompt" | "modelConfig" | "exit" | null;
-export type CharacterState = "idle" | "blink" | "drag" | "smile" | "thinking-eyes-open" | "thinking-eyes-closed"
+export type CharacterState = 
+  "idle" | 
+  "blink" | 
+  "drag" | 
+  "smile" | 
+  "thinking-eyes-open" | 
+  "thinking-eyes-closed" | 
+  "awaiting-file"
+  // "processing-file" | 
+  // "timer"

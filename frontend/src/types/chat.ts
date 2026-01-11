@@ -25,6 +25,7 @@ export interface ChatConfig {
 export interface ChatRequest extends ChatConfig {
   messages: Message[];
   stream: boolean;
+  files?: File[];
 }
 
 export interface StreamChunk {

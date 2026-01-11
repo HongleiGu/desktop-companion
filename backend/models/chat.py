@@ -1,3 +1,4 @@
+# from fastapi import File, UploadFile
 from pydantic import BaseModel, Field
 from typing import List, Dict, Optional
 from .message import Message
@@ -13,3 +14,6 @@ class ChatRequest(BaseModel):
 
     tools: Optional[List[ToolDefinition]] = None
     metadata: Optional[Dict] = None
+
+    # files: UploadFile | None = File(None),
+    # files cannot be serialized in the field, need an extra param

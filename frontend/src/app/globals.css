@@ -59,3 +59,7 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
 }
+
+#__next-dev-overlay {
+  display: none !important;
+}

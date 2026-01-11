@@ -2,9 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: false,
-  devIndicators: {
-    position: undefined
-  }
+  devIndicators: false
 };
 
 export default nextConfig;
