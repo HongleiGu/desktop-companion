@@ -6,7 +6,7 @@ from files.inject import inject_file_context
 from files.parser import parse_uploaded_file
 from models.files import ParsedFile
 from models.chat import ChatRequest
-from providers.registry import get_llm
+from llm import LLM
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Desktop Companion AI API")
@@ -20,6 +20,8 @@ app.add_middleware(
     allow_headers=["*"],  # allow Content-Type, Authorization, etc.
 )
 
+llm_client = LLM()
+
 @app.post("/chat")
 async def chat(
     payload: str = Form(...),
@@ -27,13 +29,7 @@ async def chat(
 ):
     # Parse JSON payload
     req: ChatRequest = ChatRequest.model_validate(json.loads(payload))
-
-    print(req)
-
     messages = req.messages
-
-    print(messages)
-    print(type(messages[0]))
     file_contexts = []
 
     # Parse all uploaded files
@@ -50,14 +46,12 @@ async def chat(
     messages = inject_file_context(messages, file_contexts)
     req.messages = messages
 
-    llm = get_llm(req)
-
     if req.stream:
         def generator():
-            for chunk in llm.stream(messages):
+            for chunk in llm_client.stream(messages):
                 yield f"data:{chunk.model_dump_json()}\n\n"
 
         return StreamingResponse(generator(), media_type="text/event-stream")
 
-    text = llm.generate(messages)
+    text = llm_client.generate(messages)
     return {"content": text}
