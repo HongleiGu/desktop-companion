@@ -1,14 +1,15 @@
 from tools.base import Tool
 
-class UpdateCharacterProfileTool(Tool):
-    name = "update_character_profile"
-    description = "Update the character's profile information shown to the user."
+class GetCharacterProfileTool(Tool):
+    name = "get_character_profile"
+    description = "Get the frontend character profile"
     execution = "frontend"
 
     def args_schema(self):
         return {
             "type": "object",
-            "properties": {
+            "properties": "None",
+            "return": {
                 "birthday": {"type": "string"},
                 "ocName": {"type": "string"},
                 "relation": {"type": "string"},
@@ -16,7 +17,6 @@ class UpdateCharacterProfileTool(Tool):
                 "personality": {"type": "string"},
                 "description": {"type": "string"}
             },
-            "return": "None",
             "additionalProperties": False
         }
 

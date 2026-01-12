@@ -14,6 +14,7 @@ class ChatRequest(BaseModel):
 
     tools: Optional[List[ToolDefinition]] = None
     metadata: Optional[Dict] = None
+    
 
     # files: UploadFile | None = File(None),
     # files cannot be serialized in the field, need an extra param

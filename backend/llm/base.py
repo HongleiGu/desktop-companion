@@ -46,7 +46,7 @@ class LLM(ABC):
             )
             for chunk in response:
                 content = chunk.choices[0].delta.content or ""
-                yield StreamChunk(content=content)
+                yield StreamChunk(type="token",content=content)
         except Exception as e:
             print(f"❌ failed to stream the LLM: {e}")
             return
