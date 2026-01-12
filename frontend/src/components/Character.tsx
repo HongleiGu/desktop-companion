@@ -77,7 +77,9 @@ export default function Character() {
   // --- Mouse interactions ---
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
-    setCharacterState("drag");
+    if (e.button === 0) {
+      setCharacterState("drag");
+    }
   };
 
   const handleMouseUp = (e: React.MouseEvent) => {

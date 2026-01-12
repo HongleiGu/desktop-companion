@@ -26,9 +26,10 @@ function createWindow() {
   });
   mainWindow.setAlwaysOnTop(true, "screen-saver")
   mainWindow.setVisibleOnAllWorkspaces(true)
-
+  mainWindow.webContents.openDevTools({ mode: "detach" });
   const url = isDev ? 'http://localhost:3000' : `file://${join(__dirname, '../../out/index.html')}`;
   mainWindow.loadURL(url);
+
 
   setInterval(() => {
     if (!mainWindow.isDestroyed()) {

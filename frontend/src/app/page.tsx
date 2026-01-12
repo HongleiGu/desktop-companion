@@ -5,6 +5,7 @@ import Character from "../components/Character";
 import CharacterMenu from "../components/CharacterMenu";
 import ChatBox from "../components/ChatBox";
 import { useStore } from "../store/store";
+import { ToolApprovalPanel } from "../components/ToolApprovalPanel";
 
 export default function Home() {
   const streamedText = useStore((s) => s.currentStreamText);
@@ -16,7 +17,7 @@ export default function Home() {
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!uiRef.current) return;
-      console.log(openModal)
+      // console.log(openModal)
       // ✅ If any modal is open, allow all mouse events
       if (openModal) {
         window.electronAPI.setIgnoreMouseEvents(false);
@@ -77,7 +78,7 @@ export default function Home() {
           </div>
         )}
 
-
+        <ToolApprovalPanel/>
         <CharacterMenu>
           <Character />
         </CharacterMenu>

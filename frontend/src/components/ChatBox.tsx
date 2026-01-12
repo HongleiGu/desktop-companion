@@ -5,8 +5,11 @@ import { Button, Input, List, Space, Tag } from "antd";
 import { useStore } from "../store/store";
 import { useModelConfigStore } from "../store/modelStore";
 import { sendMessageStream } from "../lib/api";
-import { Message } from "../types/chat";
+// import { Message } from "../types/chat";
 import { formatSystemPrompt } from "../utils/chat";
+import { parseReAct } from "../lib/reactParser";
+import { TOOL_MAP } from "../types/tools";
+import { confirmTool } from "../lib/confirmTool";
 
 export default function ChatBox() {
   const [msg, setMsg] = useState("");
@@ -29,7 +32,7 @@ export default function ChatBox() {
 
     // Add user message
     addChat({
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       timestamp: new Date().toISOString(),
       content: msg,
       role: "user"
@@ -62,17 +65,54 @@ export default function ChatBox() {
       }
       console.log("final:", fullReply);
 
-      // Store final assistant message
+      // Store assistant message
       addChat({
         id: crypto.randomUUID(),
         timestamp: new Date().toISOString(),
         content: fullReply,
         role: "assistant"
-      } as Message);
-      setCharacterState("idle");
+      });
 
-      // Clear the temporary stream text
-      // clearStream();
+      // 🔍 Parse result
+      const parsed = parseReAct(fullReply);
+      console.log(parsed)
+
+      if (parsed.type === "action") {
+        const { tool, args } = parsed;
+
+        if (!TOOL_MAP[tool]) {
+          console.error("Unknown tool:", tool);
+          setCharacterState("idle");
+          return;
+        }
+
+        const confirmed = await confirmTool(tool, args);
+        if (!confirmed) {
+          setCharacterState("idle");
+          return;
+        }
+
+        // Execute tool
+        const result: Record<string, unknown> = await TOOL_MAP[tool](args as unknown);
+
+        // Append tool message
+        addChat({
+          id: crypto.randomUUID(),
+          timestamp: new Date().toISOString(),
+          role: "tool",
+          content: JSON.stringify({
+            tool_name: tool,
+            value: result.value,
+            message: result.message
+          })
+        });
+
+        // 🔁 Send SECOND request
+        await handleSend();
+        return;
+      }
+
+      setCharacterState("idle");
     } catch (err) {
       console.error(err);
       addChat({
