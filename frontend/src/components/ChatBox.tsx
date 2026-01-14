@@ -59,7 +59,7 @@ export default function ChatBox() {
           if (data.type === "token" && data.content) {
             fullReply += data.content;
             setStreamText(fullReply);
-            console.log("token:", data.content);
+            // console.log("token:", data.content);
           }
         }
       }

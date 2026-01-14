@@ -39,6 +39,12 @@ Action: The action you decide to take, which must be one of the following format
 
 You must provide only ONE Thought and ONE Action at a time. After specifying an Action, you must STOP and wait for the Observation. Do not output multiple Thoughts or try to guess the outcome of your actions.
 
+When calling tools:
+- You MUST output arguments as STRICT, VALID JSON.
+- Use double quotes for all strings.
+- Do NOT include any text outside the JSON object.
+- You MUST fill in EVERY JSON field
+
 Now, please start helping the user with their question:
 
 History: {history}

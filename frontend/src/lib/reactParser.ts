@@ -16,15 +16,28 @@ export function parseReAct(text: string): ParsedResult {
     }
 
     if (line.includes("Action:")) {
+      if (lines.includes("Action: Finish[")) {
+        return {
+          type: "finish",
+          answer: line.split("Action:")[1]!.slice(0, -1).trim()
+        } as ParsedResult
+      }
       const raw = line.split("Action:")[1]!.trim();
-      const name = raw.split("[")[0];
-      const argStr = raw.slice(name.length + 1, -1);
+      const name = raw.split("[")[0].trim();
+      const argStr = raw.split("[")[1].slice(0, -1);
+      console.log(name, argStr)
 
       let args = {};
       try {
         args = argStr ? JSON.parse(argStr) : {};
       } catch {
-        args = { input: argStr };
+        try {
+          // somtimmes the brackets are missing
+          args = argStr ? JSON.parse('{'+argStr+'}') : {};
+
+        } catch {
+          args = { input: argStr };
+        }
       }
 
       return {

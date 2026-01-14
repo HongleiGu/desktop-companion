@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input, Button, Space } from "antd";
 import { useStore } from "../store/store";
 // import { CharacterProfile } from "../types";
@@ -8,6 +8,11 @@ export default function CharacterProfileForm() {
   const characterProfile = useStore((s) => s.characterProfile);
   const setCharacterProfile = useStore((s) => s.setCharacterProfile);
   const [form, setForm] = useState(characterProfile);
+
+  useEffect(() => {
+    setForm(characterProfile);
+  }, [characterProfile]);
+
 
   const fields = [
     { key: "ocName", label: "昵称" },

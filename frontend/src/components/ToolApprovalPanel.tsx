@@ -11,7 +11,7 @@ export function ToolApprovalPanel() {
   return (
     <Card
       title={`Tool Request: ${pending.tool}`}
-      style={{ marginTop: 8 }}
+      style={{ marginTop: 8, maxWidth: 800 }}
     >
       <pre style={{ maxHeight: 200, overflow: "auto" }}>
         {JSON.stringify(pending.args, null, 2)}

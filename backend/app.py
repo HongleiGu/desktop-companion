@@ -95,6 +95,7 @@ async def chat(
     # ---------------- Non-streaming ---------------- #
     llm_stream: List[StreamChunk] = agent.step(messages)
     assistant_text = "".join([chunk.content for chunk in llm_stream])
+    print(assistant_text)
 
     # Append assistant message
     messages.append(
