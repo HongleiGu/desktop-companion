@@ -35,8 +35,8 @@ class LLM(ABC):
         except Exception as e:
             print(f"❌ failed te generate the response: {e}")
             return ""
-
-    def stream(self, messages: List[Message]) -> Iterator[StreamChunk]:
+        
+    def stream(self, messages: List[Message]) -> Iterator[str]:
         chat_messages = [{"role": m.role, "content": m.content} for m in messages]
         try:
             response = self.client.chat.completions.create(
@@ -45,8 +45,23 @@ class LLM(ABC):
                 stream=True,
             )
             for chunk in response:
-                content = chunk.choices[0].delta.content or ""
-                yield StreamChunk(type="token",content=content)
+                yield chunk.choices[0].delta.content or ""
+            # the wrapping to StreamChunk should be done in the agent layer
         except Exception as e:
             print(f"❌ failed to stream the LLM: {e}")
             return
+
+    # def stream(self, messages: List[Message], **kwargs) -> Iterator[StreamChunk]:
+    #     chat_messages = [{"role": m.role, "content": m.content} for m in messages]
+    #     try:
+    #         response = self.client.chat.completions.create(
+    #             model=self.model,
+    #             messages=chat_messages,
+    #             stream=True,
+    #         )
+    #         for chunk in response:
+    #             content = chunk.choices[0].delta.content or ""
+    #             yield StreamChunk(type="token",content=content)
+    #     except Exception as e:
+    #         print(f"❌ failed to stream the LLM: {e}")
+    #         return

@@ -35,7 +35,8 @@ export default function ChatBox() {
       id: crypto.randomUUID(),
       timestamp: new Date().toISOString(),
       content: msg,
-      role: "user"
+      role: "user",
+      protocol: null
     });
 
     setMsg("");
@@ -43,26 +44,73 @@ export default function ChatBox() {
     try {
       // the update of chatHistory requires a re-render, so we had to do this runtime workaround
       const reader = await sendMessageStream(useStore.getState().chatHistory, formatSystemPrompt(systemPrompt), modelConfig, files, true); // fetch reader
-      let fullReply = "";
+      let protocol: "DIRECT_LLM" | "REACT" | null = null;
+      let reactBuffer = ""; // buffer, also full text, but I wish this is temporary
+      let isStreamingFinish = false;
+      let rendered = ""; // only the rendered part
+      let fullReply = ""; // get the full reply regardless
       const decoder = new TextDecoder();
 
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
 
-        // split lines (SSE format: data: {...}\n\n)
+        const chunk = decoder.decode(value, { stream: true });
         const lines = chunk.split("\n");
+
         for (const line of lines) {
+          console.log(line)
           if (!line.startsWith("data:")) continue;
+
           const data = JSON.parse(line.replace(/^data:\s*/, ""));
-          if (data.type === "token" && data.content) {
-            fullReply += data.content;
-            setStreamText(fullReply);
-            // console.log("token:", data.content);
+
+          if (!protocol && data.protocol) {
+            protocol = data.protocol;
+          }
+          console.log("protocol:", protocol);
+
+          if (data.type !== "token" || !data.content) continue;
+
+          fullReply += data.content; // full reply is added regardless
+
+          // DIRECT_LLM: stream normally
+          if (protocol === "DIRECT_LLM") {
+            rendered += data.content;
+            setStreamText(rendered);
+            continue;
+          }
+
+          // REACT
+          if (protocol === "REACT") {
+            reactBuffer += data.content;
+            console.log("reactBuffer:", reactBuffer);
+
+            // Detect Finish start
+            if (!isStreamingFinish) {
+              const idx = reactBuffer.indexOf("Action: Finish[");
+              if (idx !== -1) {
+                isStreamingFinish = true;
+
+                // Everything after `Action: Finish[` becomes visible
+                const start =
+                  idx + "Action: Finish[".length;
+                let visible = reactBuffer.slice(start);
+                if (visible[-1] === "]") {
+                  visible = visible.slice(0, -1); // remove trailing ]
+                }
+
+                rendered += visible;
+                setStreamText(rendered);
+              }
+            } else {
+              // Already inside Finish → stream normally
+              rendered += data.content;
+              setStreamText(rendered);
+            }
           }
         }
       }
+
       console.log("final:", fullReply);
 
       // Store assistant message
@@ -70,7 +118,8 @@ export default function ChatBox() {
         id: crypto.randomUUID(),
         timestamp: new Date().toISOString(),
         content: fullReply,
-        role: "assistant"
+        role: "assistant",
+        protocol: null
       });
 
       // 🔍 Parse result
@@ -104,7 +153,8 @@ export default function ChatBox() {
             tool_name: tool,
             value: result.value,
             message: result.message
-          })
+          }),
+          protocol: null
         });
 
         // 🔁 Send SECOND request
@@ -119,7 +169,8 @@ export default function ChatBox() {
         id: crypto.randomUUID(),
         timestamp: new Date().toISOString(),
         content: "（ta好像没有回应…）",
-        role: "assistant"
+        role: "assistant",
+        protocol: null
       });
       setCharacterState("idle");
     }

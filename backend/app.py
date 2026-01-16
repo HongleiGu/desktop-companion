@@ -6,13 +6,13 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from llm import LLM
-from agent import ReActStepAgent, Message
+from agent import ReActAgent, Message, BaseAgent, Orchestrator
 from tools import ToolRegistry, UpdateCharacterProfileTool
 from files.inject import inject_file_context
 from files.parser import parse_uploaded_file
 from models.files import ParsedFile
 from models.chat import ChatRequest
-from models import ToolResult, StreamChunk
+from models import ToolResult, StreamChunk, Route
 
 # ---------------- Setup ---------------- #
 app = FastAPI(title="Desktop Companion AI API")
@@ -30,7 +30,11 @@ app.add_middleware(
 llm_client = LLM()
 tool_registry = ToolRegistry()
 tool_registry.register(UpdateCharacterProfileTool())
-agent = ReActStepAgent(llm_client, tool_registry)
+agent_map = {
+    Route.REACT: ReActAgent(llm_client, tool_registry),
+    Route.DIRECT_LLM: BaseAgent(llm_client)
+}
+orchestrator = Orchestrator(llm_client)
 
 
 # ---------------- Helper ---------------- #
@@ -66,44 +70,51 @@ def parse_messages(req: ChatRequest, files: List[UploadFile]) -> List[Message]:
 
 @app.post("/chat")
 async def chat(
-    # CHANGE THIS: Accept payload as a raw string from the Form
     payload: str = Form(...), 
     files: List[UploadFile] = File([]),
 ):
-    
+    print("Received Raw:", payload)
     # NOW your manual validation logic will actually run
     try:
         # We parse the string into your Pydantic model here
         chat_data = ChatRequest.model_validate_json(payload)
     except Exception as e:
         # This catches bad JSON formatting
+        print(f"Invalid JSON format: {str(e)}")
         raise HTTPException(status_code=422, detail=f"Invalid JSON format: {str(e)}")
 
     # IMPORTANT: Use 'chat_data' instead of 'payload' for the rest of your logic
     messages = parse_messages(chat_data, files)
     stream = chat_data.stream
 
+    # Step 1 let the Orchestrator determine which agent to use
+    agent_route = orchestrator.run(messages)
+    print(f" Using ${agent_route} Agent\n\n")
+    agent = agent_map[agent_route]
+
     # ---------------- Streaming ---------------- #
     if stream:
         async def generator():
-            llm_stream: List[StreamChunk] = agent.step(messages)
+            llm_stream: List[StreamChunk] = agent.stream(messages)
             for chunk in llm_stream:
                 yield f"data: {chunk.model_dump_json()}\n\n"
 
         return StreamingResponse(generator(), media_type="text/event-stream")
 
     # ---------------- Non-streaming ---------------- #
-    llm_stream: List[StreamChunk] = agent.step(messages)
+    llm_stream: List[StreamChunk] = agent.run(messages)
     assistant_text = "".join([chunk.content for chunk in llm_stream])
-    print(assistant_text)
+    # print(assistant_text)
 
+    # the frontend always streams, thinking of this later
     # Append assistant message
     messages.append(
         Message(
             id=str(uuid4()),
             role="assistant",
             content=assistant_text,
-            timestamp=""
+            timestamp="",
+            protocol=agent_route
         )
     )
 

@@ -1,0 +1,9 @@
+from enum import Enum
+
+class Intent(Enum):
+    CONVERSATIONAL = "CONVERSATIONAL"
+    INFORMATIONAL = "INFORMATIONAL"
+    ACTION = "ACTION"
+    UPDATE = "UPDATE"
+    RETRIEVAL = "RETRIEVAL"
+    SYSTEM = "SYSTEM"

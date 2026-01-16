@@ -4,7 +4,9 @@ from typing import Iterator, List, Dict, Any, Optional, Tuple
 from models.stream import StreamChunk
 from tools.registry import ToolRegistry
 from models.message import Message
+from models import Route
 from llm.base import LLM
+from ..utils import tokens_to_stream_chunks
 
 """
 some thoughts: to allow streaming in the agent, we assume all tools need some time so we need to "await" them
@@ -51,12 +53,64 @@ History: {history}
 """
 
 
-class ReActStepAgent:
+class ReActAgent:
     def __init__(self, llm: LLM, tool_registry: ToolRegistry):
         self.llm = llm
         self.tool_registry = tool_registry
 
-    def step(
+    # will fix this later, frontend never use this
+    def run(
+        self,
+        messages: list[Message],
+    ) -> str:
+        """
+        Streams exactly ONE assistant turn.
+        Frontend is responsible for:
+        - maintaining history
+        - executing tools
+        - calling step() again if needed
+        """
+
+        prompt = REACT_PROMPT_TEMPLATE.format(
+            tools=self._format_tools(),
+            history=self._format_history(messages),
+        )
+
+        if self.is_last_message_tool_call(messages):
+            stage = "using_tool"
+
+        return self.llm.generate([
+            Message(
+                id="react-step",
+                role="user",
+                content=prompt,
+                timestamp="",
+                protocol=Route.REACT
+            )
+        ])
+    
+    def is_last_message_tool_call(self, messages: List[Message]) -> bool:
+        """
+        Check if the last message from the frontend is a tool call.
+        """
+        if not messages:
+            return False
+        
+        last_message = messages[-1]
+        if last_message.role != "tool":
+            return False
+        
+        # action_pattern = r"Action:\s*(\w+)\[.*\]"
+        # match = re.search(action_pattern, last_message.content)
+        # if match:
+        #     action = match.group(1)
+            # tools never finish
+            # if action != "Finish":
+            #     return True
+        
+        return False
+    
+    def stream(
         self,
         messages: list[Message],
     ) -> Iterator[StreamChunk]:
@@ -73,14 +127,25 @@ class ReActStepAgent:
             history=self._format_history(messages),
         )
 
-        return self.llm.stream([
-            Message(
-                id="react-step",
-                role="user",
-                content=prompt,
-                timestamp=""
-            )
-        ])
+        if self.is_last_message_tool_call(messages):
+            stage = "using_tool"
+        else:
+            # believe the orchestrator for tool needs
+            stage = "tool_finding"
+
+        return tokens_to_stream_chunks(
+            self.llm.stream([
+                Message(
+                    id="react-step",
+                    role="user",
+                    content=prompt,
+                    timestamp="",
+                    protocol=Route.REACT
+                )
+            ]),
+            protocol=Route.REACT,
+            stage=stage
+        )
 
     def parse_result(self, text: str) -> Dict[str, Any]:
         """

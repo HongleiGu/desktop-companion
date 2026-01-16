@@ -1,11 +1,13 @@
 export type Role = "system" | "user" | "assistant" | "tool";
+export type AgentProtocol = "DIRECT_LLM" | "REACT" | null; // null for user input and tool output, need here for unity
 
 export interface Message {
   id: string;
   role: Role;
   content: string;
   name?: string;
-  timestamp: string
+  timestamp: string;
+  protocol?: AgentProtocol
 }
 
 export interface ToolDefinition {
@@ -31,4 +33,6 @@ export interface ChatRequest extends ChatConfig {
 export interface StreamChunk {
   type: "token" | "done" | "error";
   content?: string;
+  protocol?: AgentProtocol;
+  stage?: string;
 }
