@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { Button, Input, List, Space, Tag } from "antd";
-import { useStore } from "../store/store";
-import { useModelConfigStore } from "../store/modelStore";
-import { sendMessageStream } from "../lib/api";
-// import { Message } from "../types/chat";
-import { formatSystemPrompt } from "../utils/chat";
-import { parseReAct } from "../lib/reactParser";
-import { TOOL_MAP } from "../types/tools";
-import { confirmTool } from "../lib/confirmTool";
+import { useStore } from "@/store/store";
+import { useModelConfigStore } from "@/store/modelStore";
+import { sendMessageStream } from "@/lib/api";
+// import { Message } from "@/types/chat";
+import { formatSystemPrompt } from "@/utils/chat";
+import { parseReAct } from "@/lib/reactParser";
+import { TOOL_MAP } from "@/types/tools";
+import { confirmTool } from "@/lib/confirmTool";
 
 export default function ChatBox() {
   const [msg, setMsg] = useState("");

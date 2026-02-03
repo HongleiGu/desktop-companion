@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { IMAGE_MAP } from "../utils/const";
-import { useStore } from "../store/store";
-import ChatBox from "./ChatBox";
+import { IMAGE_MAP } from "@/utils/const";
+import { useStore } from "@/store/store";
+import ChatBox from "@/components/ChatBox";
 
 export default function Character() {
   const setCharacterState = useStore((s) => s.setCharacterState);

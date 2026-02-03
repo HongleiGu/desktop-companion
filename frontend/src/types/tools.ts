@@ -18,9 +18,9 @@ export type FrontendToolHandler = (
 
 export const TOOL_MAP: Record<string, FrontendToolHandler> = {
   update_character_profile: (args) => {
-    console.log(args)
+    // console.log(args)
     useStore.getState().setCharacterProfile(args as unknown as CharacterProfile);
-    console.log(useStore.getState().characterProfile)
+    // console.log(useStore.getState().characterProfile)
     return {
       message: "Charater Profile Updated",
       value: null

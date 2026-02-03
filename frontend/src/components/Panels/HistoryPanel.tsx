@@ -1,5 +1,5 @@
 "use client";
-import { useStore } from "../store/store";
+import { useStore } from "@/store/store"
 import { List, Button, Space, Typography, Empty } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";

@@ -15,7 +15,7 @@ function createWindow() {
     frame: false,
     transparent: true,
     alwaysOnTop: true,
-    alwaysOnTopLevel: 'screen-saver',
+    // alwaysOnTopLevel: 'screen-saver',
     resizable: false,
     hasShadow: false,
     webPreferences: {
@@ -24,18 +24,20 @@ function createWindow() {
       nodeIntegration: false,
     },
   });
-  mainWindow.setAlwaysOnTop(true, "screen-saver")
+  mainWindow.setAlwaysOnTop(true, "floating")
+  // mainWindow.on('blur', () => mainWindow.setAlwaysOnTop(false))
+  // mainWindow.on('focus', () => mainWindow.setAlwaysOnTop(true, 'screen-saver'))
   mainWindow.setVisibleOnAllWorkspaces(true)
   mainWindow.webContents.openDevTools({ mode: "detach" });
   const url = isDev ? 'http://localhost:3000' : `file://${join(__dirname, '../../out/index.html')}`;
   mainWindow.loadURL(url);
 
 
-  setInterval(() => {
-    if (!mainWindow.isDestroyed()) {
-      mainWindow.setAlwaysOnTop(true, 'screen-saver');
-    }
-  }, 100);
+  // setInterval(() => {
+  //   if (!mainWindow.isDestroyed()) {
+  //     mainWindow.setAlwaysOnTop(true, 'screen-saver');
+  //   }
+  // }, 100);
 }
 
 // Robust Manual Dragging Logic

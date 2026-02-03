@@ -6,7 +6,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from llm import LLM
-from agent import ReActAgent, Message, BaseAgent, Orchestrator
+from agent import ReActAgent, Message, BaseAgent, ReActOrchestrator
 from tools import ToolRegistry, UpdateCharacterProfileTool
 from files.inject import inject_file_context
 from files.parser import parse_uploaded_file
@@ -34,7 +34,7 @@ agent_map = {
     Route.REACT: ReActAgent(llm_client, tool_registry),
     Route.DIRECT_LLM: BaseAgent(llm_client)
 }
-orchestrator = Orchestrator(llm_client)
+orchestrator = ReActOrchestrator(llm_client)
 
 
 # ---------------- Helper ---------------- #

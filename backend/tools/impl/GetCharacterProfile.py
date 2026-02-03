@@ -5,7 +5,8 @@ class GetCharacterProfileTool(Tool):
     description = "Get the frontend character profile"
     execution = "frontend"
 
-    def args_schema(self):
+    @property
+    def schema(self):
         return {
             "type": "object",
             "properties": "None",

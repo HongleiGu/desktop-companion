@@ -1,6 +1,7 @@
 import json
 import re
 from typing import Iterator, List, Dict, Any, Optional, Tuple
+from core.registry import UnifiedRegistry
 from models.stream import StreamChunk
 from tools.registry import ToolRegistry
 from models.message import Message
@@ -54,7 +55,7 @@ History: {history}
 
 
 class ReActAgent:
-    def __init__(self, llm: LLM, tool_registry: ToolRegistry):
+    def __init__(self, llm: LLM, tool_registry: UnifiedRegistry):
         self.llm = llm
         self.tool_registry = tool_registry
 
@@ -204,8 +205,8 @@ class ReActAgent:
 
     def _format_tools(self) -> str:
         lines = []
-        for tool in self.tool_registry.list():
-            schema = tool.args_schema
+        for tool in self.tool_registry.list_tools():
+            schema = tool.schema
             if callable(schema):
                 schema = schema()
 

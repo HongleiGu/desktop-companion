@@ -5,7 +5,7 @@ import Character from "../components/Character";
 import CharacterMenu from "../components/CharacterMenu";
 import ChatBox from "../components/ChatBox";
 import { useStore } from "../store/store";
-import { ToolApprovalPanel } from "../components/ToolApprovalPanel";
+import { ToolApprovalPanel } from "../components/Panels/ToolApprovalPanel";
 
 export default function Home() {
   const streamedText = useStore((s) => s.currentStreamText);

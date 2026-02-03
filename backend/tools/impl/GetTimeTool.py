@@ -5,7 +5,8 @@ class GetTimeTool(Tool):
     description = "Get the current system time"
     execution = "backend"
 
-    def args_schema(self):
+    @property
+    def schema(self):
         return {"type": "object", "properties": {}}
 
     def execute(self):

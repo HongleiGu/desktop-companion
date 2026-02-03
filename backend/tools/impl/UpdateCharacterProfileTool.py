@@ -5,7 +5,8 @@ class UpdateCharacterProfileTool(Tool):
     description = "Update the character's profile information shown to the user."
     execution = "frontend"
 
-    def args_schema(self):
+    @property
+    def schema(self):
         return {
             "type": "object",
             "properties": {

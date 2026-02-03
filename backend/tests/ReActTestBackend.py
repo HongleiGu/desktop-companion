@@ -1,7 +1,7 @@
 from tools import ToolRegistry, GetTimeTool
 from llm import LLM
 import json
-from agent import ReActStepAgent  # stateless version
+from agent import ReActAgent  # stateless version
 from models import Message, StreamChunk, ToolResult
 from uuid import uuid4
 
@@ -10,7 +10,7 @@ registry = ToolRegistry()
 tool = GetTimeTool()
 registry.register(tool)
 llm = LLM()
-agent = ReActStepAgent(llm, registry)
+agent = ReActAgent(llm, registry)
 
 # Conversation history: frontend owns this
 messages = []
@@ -30,7 +30,7 @@ messages.append(Message(
 # ---------------- Frontend loop ---------------- #
 while True:
     # Step 1: agent generates a turn
-    stream: StreamChunk = agent.step(messages)
+    stream: StreamChunk = agent.run(messages)
 
     # Collect full streamed text
     assistant_text = ""

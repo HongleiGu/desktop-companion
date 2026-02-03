@@ -15,8 +15,9 @@ class Tool(ABC):
     # for example, some UI changes need frontend involvement
     execution: Literal["backend", "frontend"]
 
+    @property
     @abstractmethod
-    def args_schema(self) -> Dict[str, Any]:
+    def schema(self) -> Dict[str, Any]:
         """
         Returns a JSON Schema describing expected arguments.
         Must be valid JSON Schema draft-07 compatible.

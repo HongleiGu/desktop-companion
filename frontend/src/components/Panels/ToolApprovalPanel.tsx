@@ -1,5 +1,5 @@
 import { Button, Card } from "antd";
-import { useToolApprovalStore } from "../store/toolApprovalStore";
+import { useToolApprovalStore } from "@/store/toolApprovalStore";
 
 export function ToolApprovalPanel() {
   const pending = useToolApprovalStore(s => s.pending);

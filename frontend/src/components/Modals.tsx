@@ -1,9 +1,10 @@
 import { Modal } from "antd";
 import { useStore } from "../store/store";
-import HistoryPanel from "./HistoryPanel";
-import UserProfileForm from "./UserProfile";
-import PromptEditor from "./PromptEditor";
-import ModelConfigPanel from "./ModelConfigPanel";
+import HistoryPanel from "./Panels/HistoryPanel";
+import UserProfileForm from "./Panels/UserProfile";
+import PromptEditor from "./Panels/PromptEditor";
+import ModelConfigPanel from "./Panels/ModelConfigPanel";
+import TodoListPanel from "./Panels/TODOList";
 
 export default function Modals() {
   const openModal = useStore((s) => s.openModal);
@@ -62,9 +63,19 @@ export default function Modals() {
         width={1000}
         centered
         mask={false}
-        
       >
         <ModelConfigPanel />
+      </Modal>
+      <Modal
+        open={openModal === "todo"}
+        onCancel={() => setOpenModal(null)}
+        footer={null}
+        title="TODO"
+        width={1000}
+        centered
+        mask={false}
+      >
+        <TodoListPanel/>
       </Modal>
     </>
   );

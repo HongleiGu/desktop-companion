@@ -4,8 +4,8 @@ import { Dropdown } from "antd";
 import type { MenuProps } from "antd";
 import { useRef } from "react";
 // import Modals from "./Modals";
-import { useStore } from "../store/store";
-import { MenuType } from "../types";
+import { useStore } from "@/store/store";
+import { MenuType } from "@/types";
 
 export default function CharacterMenu({ children }: { children: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -20,6 +20,7 @@ export default function CharacterMenu({ children }: { children: React.ReactNode 
     { key: "profile", label: "用户档案" },
     { key: "system prompt", label: "系统提示词模板" },
     { key: "modelConfig", label: "模型设置"},
+    { key: "todo", label: "TODO"},
     { type: "divider" },
     { key: "exit", label: "退出" }
   ];

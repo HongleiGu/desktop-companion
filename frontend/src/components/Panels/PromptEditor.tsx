@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { List, Typography, Space, Button, Input, Divider } from "antd";
 import { CopyOutlined } from "@ant-design/icons";
-import { useStore } from "../store/store";
+import { useStore } from "@/store/store";
 
 const { Text } = Typography;
 const { TextArea } = Input;

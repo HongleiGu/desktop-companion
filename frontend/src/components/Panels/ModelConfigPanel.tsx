@@ -1,7 +1,7 @@
 "use client";
 
 import { List, Space, Typography, Select, Slider, InputNumber } from "antd";
-import { useModelConfigStore } from "../store/modelStore";
+import { useModelConfigStore } from "@/store/modelStore";
 
 const { Text } = Typography;
 

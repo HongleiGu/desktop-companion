@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Input, Button, Space } from "antd";
-import { useStore } from "../store/store";
+import { useStore } from "@/store/store";
 // import { CharacterProfile } from "../types";
 
 export default function CharacterProfileForm() {

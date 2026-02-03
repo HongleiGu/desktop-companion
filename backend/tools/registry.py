@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List, Optional
 from tools.base import Tool
 
 class ToolRegistry:
@@ -8,8 +8,8 @@ class ToolRegistry:
     def register(self, tool: Tool):
         self._tools[tool.name] = tool
 
-    def get(self, name: str) -> Tool:
-        return self._tools[name]
+    def get(self, name: str) -> Optional[Tool]:
+        return self._tools.get(name)
 
-    def list(self):
+    def list_tools(self) -> List[Tool]:
         return list(self._tools.values())
