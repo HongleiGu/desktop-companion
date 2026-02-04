@@ -16,10 +16,4 @@ class GitHubMCP(RemoteMCPProxy):
             args=["-y", "@modelcontextprotocol/server-github"],
             env=env # Pass the token to the subprocess
         )
-
-    def search_repo(self, query: str):
-        """
-        Example of a helper method. 
-        In reality, the ReAct Agent will call 'call_tool' directly.
-        """
-        return self.call_tool("search_repositories", {"query": query})
+    

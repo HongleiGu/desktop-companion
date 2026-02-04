@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Tuple, Any
 from MCP.base import MCP
-from tools import NamespacedTool
+from tools.namespacedTool import NamespacedTool
 from tools.base import Tool
 
 from typing import Dict, List, Optional, Any
@@ -42,3 +42,10 @@ class UnifiedRegistry:
     def get_relevant_tools(self, query: str):
         """Future home for Tool-RAG and Dynamic Installation."""
         raise NotImplementedError("Dynamic provisioning via RAG not implemented.")
+    
+    def shutdown(self):
+        """Clean up all remote providers."""
+        print("\nShutting down MCP providers...")
+        for name, provider in self._providers.items():
+            if hasattr(provider, 'shutdown'):
+                provider.shutdown()

@@ -1,5 +1,5 @@
 from typing import Any, Dict, List
-from ollama import Tool
+from tools.base import Tool
 from MCP.base import MCP
 from tools.impl import GetTimeTool
 from tools.impl import UpdateCharacterProfileTool

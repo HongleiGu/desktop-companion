@@ -27,30 +27,50 @@ the the agent requires such functions
 """
 
 REACT_PROMPT_TEMPLATE = """
-Please note, you are an intelligent assistant capable of using external tools.
+You are an intelligent assistant that can reason step-by-step and use tools.
 
-Available tools:
+TOOLS (tool names may include namespaces):
 {tools}
 
-You must respond strictly in the following format:
+IMPORTANT:
+- Some tool names include a namespace and colon, for example: github:search_repositories
+- A namespaced tool name MUST be treated as ONE complete tool name
+- Do NOT split, shorten, or modify tool names
 
-Thought: Your thought process for analyzing the problem, breaking down tasks, and planning the next step.
-Action: The action you decide to take, which must be one of the following formats:
-- `{{tool_name}}[{{tool_input}}]`: Call an available tool.
-- `Finish[final answer]`: Use this when you believe you have obtained the final answer.
-- Once you have gathered enough information to answer the user’s question, you must use `Finish[...]` in the `Action:` field to output the final answer.
+You MUST follow this output format exactly:
 
-You must provide only ONE Thought and ONE Action at a time. After specifying an Action, you must STOP and wait for the Observation. Do not output multiple Thoughts or try to guess the outcome of your actions.
+Thought: Brief reasoning about what to do next.
+Action: One of the following (and only one):
+- tool_name[tool_input]
+- Finish[final answer]
 
-When calling tools:
-- You MUST output arguments as STRICT, VALID JSON.
+Rules:
+- Output exactly ONE Thought and ONE Action.
+- After an Action, STOP. Wait for the Observation.
+- Do NOT output multiple Thoughts or Actions.
+- Do NOT explain or predict tool results.
+- Use Finish[...] ONLY when the final answer is ready.
+
+Tool usage rules:
+- tool_input MUST be valid JSON.
 - Use double quotes for all strings.
-- Do NOT include any text outside the JSON object.
-- You MUST fill in EVERY JSON field
+- Include ALL required JSON fields.
+- Do NOT include any text outside the JSON.
 
-Now, please start helping the user with their question:
+EXAMPLE (format must be followed exactly):
 
-History: {history}
+    Thought: I need to use a tool to get the required information.
+    Action: example_namespace:example_tool[{{"input":"example value"}}]
+
+    Observation: Tool returns the requested data.
+
+    Thought: I have enough information to answer the question.
+    Action: Finish[final answer]
+
+Begin solving the user’s request.
+
+Conversation history:
+{history}
 """
 
 
