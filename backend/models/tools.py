@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 from typing import Any, Dict, Optional
 
-class ToolDefinition(BaseModel):
+class ToolRequest(BaseModel):
     name: str
-    description: str
-    parameters: Dict[str, Any]
+    # description: str
+    args: Dict[str, Any]
 
 class ToolResult(BaseModel):
     message: str  # e.g., "Tool executed successfully"

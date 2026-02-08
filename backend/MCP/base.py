@@ -9,6 +9,12 @@ class MCP(ABC):
     description: str
     tool_registry: ToolRegistry
 
+    @property
+    @abstractmethod
+    def config(self):
+        # a config is required for all MCPs
+        pass
+
     @abstractmethod
     def get_tool_schemas(self) -> List[dict]:
         """

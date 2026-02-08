@@ -11,6 +11,12 @@ class RemoteMCPProxy(MCP):
         self.name = name
         self._id_counter = 1
         self._tools: List[RemoteBridgeTool] = []
+        self._config = {
+            "name": name,
+            "args": args,
+            "command": command,
+            "env": env if env is not None else {}
+        }
         
         # Merge provided env with system env (needed for PATH, etc.)
         full_env = os.environ.copy()
@@ -34,6 +40,10 @@ class RemoteMCPProxy(MCP):
 
         # Phase 1: Auto-Discovery Handshake
         self._discover_tools()
+
+    @property
+    def config(self):
+        return self._config
 
     def _log_stderr(self):
         """Pipes the remote server's logs to our console for debugging."""

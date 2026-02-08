@@ -1,34 +1,31 @@
-# this is the orchestrator, it decides what agent we should use and what tools to call
-# since in our design, the agent is fully stateless, so we must call this before every Agent call
-
 import json
-from typing import List
+import logging
+from typing import Iterator, List
 from uuid import uuid4
 
 from core.registry import UnifiedRegistry
-from models.intent import Intent
 from models.message import Message
 from llm.base import LLM
 from ...base import Agent
 from models.route import Route
 
+# Using a more "Ollama-friendly" prompt structure
 ORCHESTRATOR_PROMPT = """
-You are a routing agent. Determine if the user's request requires external tools or just a conversation.
+You are a routing system. Your job is to decide if the user's request needs a tool (REACT) or is just conversation (DIRECT_LLM).
 
-Available Tool Namespaces:
+AVAILABLE TOOL NAMESPACES:
 {namespaces}
 
-Intents:
-- DIRECT_LLM: Casual chat, general knowledge, greeting, or the request cannot be fulfilled by available tools.
-- REACT: Use this if the user wants to perform an action, update data, or fetch specific information that matches an available tool namespace.
+DECISION RULES:
+1. Use 'REACT' if the request requires fetching specific data, performing actions, or using any tool from the namespaces above.
+2. Use 'DIRECT_LLM' for greetings, general knowledge, or if no tools match.
 
-Return JSON:
+OUTPUT FORMAT:
+You must return ONLY a valid JSON object. Do not include markdown blocks or extra text.
 {{
-  "route": "DIRECT_LLM | REACT",
-  "reason": "short explanation"
+  "route": "DIRECT_LLM",
+  "reason": "explanation"
 }}
-
-User request: {question}
 """
 
 class ReActOrchestrator(Agent):
@@ -36,26 +33,51 @@ class ReActOrchestrator(Agent):
         self.llm = llm
         self.registry = registry
 
+    def _format_messages(self, question: str, namespaces: List[str]) -> List[Message]:
+        system_content = ORCHESTRATOR_PROMPT.format(namespaces=", ".join(namespaces))
+        return [
+            Message(
+                id=str(uuid4()),
+                role="system",
+                content=system_content,
+                timestamp=""
+            ),
+            Message(
+                id=str(uuid4()),
+                role="user",
+                content=f"User Request: {question}",
+                timestamp=""
+            )
+        ]
+
     def run(self, messages: List[Message]) -> Route:
         user_text = messages[-1].content
         
-        # Get a simple list of namespaces/tools for context
-        # e.g., "system, weather_mcp, character_mcp"
-        namespaces = list(set([name.split(':')[0] for name, _ in self.registry.list_all()]))
+        # Get namespaces
+        tools = self.registry.list_tools()
+        namespaces = list(set([tool.name.split(':')[0] for tool in tools]))
 
-        formatted_prompt = ORCHESTRATOR_PROMPT.format(
-            question=user_text,
-            namespaces=", ".join(namespaces)
-        )
+        formatted_msgs = self._format_messages(user_text, namespaces)
 
         try:
-            raw = self.llm.generate([Message(role="system", content=formatted_prompt)])
-            data = json.loads(raw)
+            # Note: Ensure your LLM class returns the string content of the message
+            raw = self.llm.generate(formatted_msgs)
             
-            # Map the route directly from the LLM's decision
-            route_str = data.get("route")
-            return Route(route_str) if route_str else Route.DIRECT_LLM
+            if not raw or not raw.strip():
+                print("Warning: LLM returned empty content. Defaulting to DIRECT_LLM.")
+                return Route.DIRECT_LLM
+
+            # Clean up potential markdown backticks if the LLM ignores the "no markdown" rule
+            clean_raw = raw.replace("```json", "").replace("```", "").strip()
+            data = json.loads(clean_raw)
+            
+            route_str = data.get("route", "DIRECT_LLM")
+            # Ensure we return a valid Route enum
+            return Route(route_str)
 
         except Exception as e:
-            print(f"Orchestrator error: {e}")
+            print(f"Orchestrator error: {e} | Raw output: {raw}")
             return Route.DIRECT_LLM
+        
+    def stream(self, messages: List[Message]) -> Iterator:
+        raise NotImplementedError("Orchestrator does not support streaming.")

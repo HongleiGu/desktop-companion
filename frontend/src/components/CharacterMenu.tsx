@@ -21,6 +21,7 @@ export default function CharacterMenu({ children }: { children: React.ReactNode 
     { key: "system prompt", label: "系统提示词模板" },
     { key: "modelConfig", label: "模型设置"},
     { key: "todo", label: "TODO"},
+    { key: "MCP/tools", label: "MCP/tools设置"},
     { type: "divider" },
     { key: "exit", label: "退出" }
   ];

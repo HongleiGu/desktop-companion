@@ -6,13 +6,28 @@ import CharacterMenu from "../components/CharacterMenu";
 import ChatBox from "../components/ChatBox";
 import { useStore } from "../store/store";
 import { ToolApprovalPanel } from "../components/Panels/ToolApprovalPanel";
+import { useUnifiedRegistryConfigStore } from "@/store/unifiedRegistryStore";
+import { discoverTools } from "@/lib/api";
 
 export default function Home() {
   const streamedText = useStore((s) => s.currentStreamText);
   const clearStream = useStore((s) => s.clearStream);
   const openModal = useStore((s) => s.openModal);
+  const unifiedRegistryStore = useUnifiedRegistryConfigStore()
+  
 
   const uiRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    unifiedRegistryStore.setConfig({
+      mcps: {},
+      tools: {}
+    })
+    const helper = async () => {
+      await discoverTools(unifiedRegistryStore.config, unifiedRegistryStore.setConfig)
+    }
+    helper()
+  }, [])
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {

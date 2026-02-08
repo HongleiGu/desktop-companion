@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button, Input, List, Space, Tag } from "antd";
 import { useStore } from "@/store/store";
 import { useModelConfigStore } from "@/store/modelStore";
-import { sendMessageStream } from "@/lib/api";
+import { callExternalTool, sendMessageStream } from "@/lib/api";
 // import { Message } from "@/types/chat";
 import { formatSystemPrompt } from "@/utils/chat";
 import { parseReAct } from "@/lib/reactParser";
@@ -128,38 +128,51 @@ export default function ChatBox() {
 
       if (parsed.type === "action") {
         const { tool, args } = parsed;
+        const isLocal = !!TOOL_MAP[tool];
 
-        if (!TOOL_MAP[tool]) {
-          console.error("Unknown tool:", tool);
-          setCharacterState("idle");
-          return;
-        }
-
+        // 1. User Confirmation
         const confirmed = await confirmTool(tool, args);
         if (!confirmed) {
           setCharacterState("idle");
           return;
         }
 
-        // Execute tool
-        const result: Record<string, unknown> = await TOOL_MAP[tool](args as unknown);
+        try {
+          let result: {
+            message: string,
+            value: unknown
+          };
 
-        // Append tool message
-        addChat({
-          id: crypto.randomUUID(),
-          timestamp: new Date().toISOString(),
-          role: "tool",
-          content: JSON.stringify({
-            tool_name: tool,
-            value: result.value,
-            message: result.message
-          }),
-          protocol: null
-        });
+          // 2. Execution Switch
+          if (isLocal) {
+            result = await TOOL_MAP[tool](args);
+          } else {
+            // If it's not in our local map, we assume it's a backend/external tool
+            result = await callExternalTool(tool, args);
+          }
 
-        // 🔁 Send SECOND request
-        await handleSend();
-        return;
+          // Handle your result here (e.g., send back to LLM or update UI)
+          console.log("Tool execution successful:", result);
+          // Append tool message
+          addChat({
+            id: crypto.randomUUID(),
+            timestamp: new Date().toISOString(),
+            role: "tool",
+            content: JSON.stringify({
+              tool_name: tool,
+              value: result.value,
+              message: result.message
+            }),
+            protocol: null
+          });
+
+          // 🔁 Send SECOND request
+          await handleSend();
+          return;
+        } catch (error) {
+          console.error(`Error executing tool ${tool}:`, error);
+          // Optionally alert the user or reset state
+        }
       }
 
       setCharacterState("idle");

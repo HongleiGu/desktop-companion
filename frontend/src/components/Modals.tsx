@@ -4,7 +4,7 @@ import HistoryPanel from "./Panels/HistoryPanel";
 import UserProfileForm from "./Panels/UserProfile";
 import PromptEditor from "./Panels/PromptEditor";
 import ModelConfigPanel from "./Panels/ModelConfigPanel";
-import TodoListPanel from "./Panels/TODOList";
+import { UnifiedRegistryPanel } from "./Panels/UnifiedRegistryPanel";
 
 export default function Modals() {
   const openModal = useStore((s) => s.openModal);
@@ -67,15 +67,15 @@ export default function Modals() {
         <ModelConfigPanel />
       </Modal>
       <Modal
-        open={openModal === "todo"}
+        open={openModal === "MCP/tools"}
         onCancel={() => setOpenModal(null)}
         footer={null}
-        title="TODO"
+        title="MCP/tools设置"
         width={1000}
         centered
         mask={false}
       >
-        <TodoListPanel/>
+        <UnifiedRegistryPanel />
       </Modal>
     </>
   );

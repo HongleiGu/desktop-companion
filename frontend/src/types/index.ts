@@ -7,7 +7,7 @@ export interface CharacterProfile {
   description: string;
 }
 
-export type MenuType = "history" | "profile" | "system prompt" | "modelConfig" | "exit" | "todo" | null;
+export type MenuType = "history" | "profile" | "system prompt" | "modelConfig" | "exit" | "MCP/tools" | null;
 export type CharacterState = 
   "idle" | 
   "blink" | 

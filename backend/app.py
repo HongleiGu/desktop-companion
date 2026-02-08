@@ -1,23 +1,25 @@
 import json
-from typing import List, Dict
+from typing import List
 from uuid import uuid4
+
 from fastapi import Body, FastAPI, Form, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
+from models.tools import ToolRequest, ToolResult
+from models.spec import UnifiedRegistrySpec
 from llm import LLM
 from agent import ReActAgent, Message, BaseAgent, ReActOrchestrator
-from tools import ToolRegistry, UpdateCharacterProfileTool
 from files.inject import inject_file_context
 from files.parser import parse_uploaded_file
 from models.files import ParsedFile
 from models.chat import ChatRequest
-from models import ToolResult, StreamChunk, Route
+from models import StreamChunk, Route
+from core.registry import UnifiedRegistry
 
 # ---------------- Setup ---------------- #
 app = FastAPI(title="Desktop Companion AI API")
 
-# Allow frontend to communicate
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -28,25 +30,19 @@ app.add_middleware(
 
 # ---------------- LLM + Agent ---------------- #
 llm_client = LLM()
-tool_registry = ToolRegistry()
-tool_registry.register(UpdateCharacterProfileTool())
+# ---------------- UnifiedRegistry ---------------- #
+registry = UnifiedRegistry()
 agent_map = {
-    Route.REACT: ReActAgent(llm_client, tool_registry),
+    Route.REACT: ReActAgent(llm_client, registry),
     Route.DIRECT_LLM: BaseAgent(llm_client)
 }
-orchestrator = ReActOrchestrator(llm_client)
-
+orchestrator = ReActOrchestrator(llm_client, registry)
 
 # ---------------- Helper ---------------- #
 def parse_messages(req: ChatRequest, files: List[UploadFile]) -> List[Message]:
-    """
-    Parse JSON payload into Message objects, inject file contexts,
-    and ensure each message has a unique id.
-    """
     messages = req.messages.copy()
     file_contexts: List[ParsedFile] = []
 
-    # Parse all uploaded files
     for file in files:
         raw_bytes = file.file.read()
         parsed = parse_uploaded_file(
@@ -56,10 +52,8 @@ def parse_messages(req: ChatRequest, files: List[UploadFile]) -> List[Message]:
         )
         file_contexts.append(parsed)
 
-    # Inject file context as system messages
     messages = inject_file_context(messages, file_contexts)
 
-    # Ensure each message has a unique id and convert to Pydantic Message
     pydantic_messages = []
     for m in messages:
         if not hasattr(m, "id") or not m.id:
@@ -68,29 +62,22 @@ def parse_messages(req: ChatRequest, files: List[UploadFile]) -> List[Message]:
 
     return pydantic_messages
 
+# ---------------- Endpoints ---------------- #
 @app.post("/chat")
-async def chat(
-    payload: str = Form(...), 
-    files: List[UploadFile] = File([]),
-):
-    print("Received Raw:", payload)
-    # NOW your manual validation logic will actually run
+async def chat(payload: str = Form(...), files: List[UploadFile] = File([])):
+    # Parse payload
     try:
-        # We parse the string into your Pydantic model here
         chat_data = ChatRequest.model_validate_json(payload)
     except Exception as e:
-        # This catches bad JSON formatting
-        print(f"Invalid JSON format: {str(e)}")
         raise HTTPException(status_code=422, detail=f"Invalid JSON format: {str(e)}")
 
-    # IMPORTANT: Use 'chat_data' instead of 'payload' for the rest of your logic
     messages = parse_messages(chat_data, files)
     stream = chat_data.stream
 
-    # Step 1 let the Orchestrator determine which agent to use
     agent_route = orchestrator.run(messages)
-    print(f" Using ${agent_route} Agent\n\n")
-    agent = agent_map[agent_route]
+    agent = agent_map.get(agent_route)
+    if not agent:
+        raise HTTPException(status_code=400, detail=f"No agent found for route {agent_route}")
 
     # ---------------- Streaming ---------------- #
     if stream:
@@ -104,10 +91,7 @@ async def chat(
     # ---------------- Non-streaming ---------------- #
     llm_stream: List[StreamChunk] = agent.run(messages)
     assistant_text = "".join([chunk.content for chunk in llm_stream])
-    # print(assistant_text)
 
-    # the frontend always streams, thinking of this later
-    # Append assistant message
     messages.append(
         Message(
             id=str(uuid4()),
@@ -118,12 +102,52 @@ async def chat(
         )
     )
 
-    # Parse Action / Finish
     result = agent.parse_result(assistant_text)
 
-    # ---------------- Prepare response ---------------- #
     return {
         "assistant_text": assistant_text,
         "result": result,
         "messages": [m.model_dump() for m in messages],
     }
+
+@app.post("/discover-tools")
+async def discover_tools(spec: UnifiedRegistrySpec):
+    """
+    Update the UnifiedRegistry from frontend spec and return
+    the full runtime_view (MCPs + tool schemas).
+    """
+    registry.register_from_spec(spec)
+    # Return the fully resolved runtime view
+    rtrn = registry.runtime_view()
+    return rtrn
+
+
+
+@app.post("/call-tool")
+async def call_tool(request: ToolRequest) -> ToolResult:
+    try:
+        # 1. Check if tool exists in registry
+        tool = registry.get(request.name)
+        if not tool:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Tool '{request.name}' not found in registry."
+            )
+
+        # 2. Execute the tool
+        # We use await if your tool's execute method is async
+        result = tool.execute(request.args)
+        
+        return ToolResult(
+            message=f"Tool {request.name} executed successfully",
+            value=result
+        )
+
+    except TypeError as e:
+        # print(e)
+        # This catches cases where the 'args' don't match the function signature
+        raise HTTPException(status_code=400, detail=f"Invalid arguments: {str(e)}")
+    except Exception as e:
+        # General catch for tool-side logic errors
+        # print(e)
+        raise HTTPException(status_code=500, detail=f"Tool execution failed: {str(e)}")

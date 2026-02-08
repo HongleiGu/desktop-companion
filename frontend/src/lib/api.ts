@@ -1,5 +1,7 @@
+import { UnifiedRegistryConfigState, useUnifiedRegistryConfigStore } from "@/store/unifiedRegistryStore";
 import { ChatConfig, ChatRequest, Message } from "../types/chat";
 import { buildSystemPrompt } from "../utils/chat";
+import { UnifiedRegistrySpec } from "@/types/registry";
 
 export const sendMessage = async (
   messages: Message[],
@@ -84,3 +86,43 @@ export const readStreamChunks = async (
     }
   }
 };
+
+// IMPORTANT: call this on app init and whenever registry config updates
+export const discoverTools = async (
+  config: UnifiedRegistrySpec,
+  setConfig: (cfg: UnifiedRegistrySpec) => void
+): Promise<void> => {
+  console.log(config)
+  const res = await fetch("http://localhost:8000/discover-tools", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(config),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to discover tools: ${text}`);
+  }
+
+  const data = await res.json();
+  setConfig(data as UnifiedRegistrySpec);
+};
+
+const BASE_URL = "http://localhost:8000";
+
+export async function callExternalTool(name: string, args: unknown) {
+  const response = await fetch(`${BASE_URL}/call-tool`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, args }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "External tool execution failed");
+  }
+
+  // Expecting { status: "success", tool: "...", output: { message, value } }
+  const data = await response.json();
+  return data.output; 
+}

@@ -24,7 +24,7 @@ class GenerationConfig:
     """
     temperature: float = 0.2
     top_p: float = 1.0
-    max_tokens: Optional[int] = None
+    max_tokens: Optional[int] = 2048
     frequency_penalty: float = 0.0
     presence_penalty: float = 0.0
 
@@ -94,6 +94,7 @@ class LLM(ABC):
                 stream=False,
                 **params,
             )
+            print(response, params)
             return response.choices[0].message.content or ""
         except Exception as e:
             print(f"❌ Failed to generate response: {e}")

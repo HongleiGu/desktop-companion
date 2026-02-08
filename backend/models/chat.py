@@ -2,7 +2,7 @@
 from pydantic import BaseModel, Field
 from typing import List, Dict, Optional
 from .message import Message
-from .tools import ToolDefinition
+# from .tools import ToolDefinition
 
 class ChatRequest(BaseModel):
     provider: str = Field(..., example="ollama")
@@ -12,7 +12,7 @@ class ChatRequest(BaseModel):
     stream: bool = False
     temperature: float = 0.7
 
-    tools: Optional[List[ToolDefinition]] = None
+    # tools: Optional[List[ToolDefinition]] = None
     metadata: Optional[Dict] = None
     
 
